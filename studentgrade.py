@@ -4,7 +4,7 @@ def insertHashData(StudentHashRecords):
         rec = f.readline().split('/')
         if rec == ['']:
             break
-        insertStudentRec(StudentHashRecords, rec[0], rec[1])
+        insertStudentRec(StudentHashRecords, rec[0], float(rec[1].rstrip("\n")))
     f.close()
 
 
@@ -13,9 +13,12 @@ def insertStudentRec(StudentHashRecords, studentId, CGPA):
     StudentHashRecords.insertStudentRec(studentId, CGPA)
 
 
-def searchStudent(StudentHashRecords, studentId):
-    hash_key = HashTable.getHash(studentId)
-    return HashTable.hashTable[hash_key]
+def searchStudentwithStudentId(StudentHashRecords, studentId):
+    return StudentHashRecords.searchStudentwithStudentId(studentId)
+
+
+def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
+    return StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
 
 
 # 3
@@ -27,8 +30,36 @@ def depAvg(self):
     pass
 
 
+# 4
 def newCourseList(StudentHashRecords, CGPAFrom, CPGATo):
-    pass
+    # implement year restriction
+    stdswithgrade = StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
+    for item in stdswithgrade:
+        if not(2010 <= int(item[0][0:4]) <= 2015):
+            stdswithgrade.remove(item)
+    return stdswithgrade
+
+
+def getnewCourseList(StudentHashRecords):
+    cgpafrom, cgpato = getCourseListRange()
+    eligibleStudents = newCourseList(StudentHashRecords, cgpafrom, cgpato)
+    contentToWrite = f'---------- new course candidates ----------\nInput: {cgpafrom}:{cgpato}\nTotal eligible students: {len(eligibleStudents)}' \
+                     f'\nQualified students:\n'
+    for item in eligibleStudents:
+        contentToWrite += item[0] + '/' + str(item[1]) + '\n'
+    generateoutputPS18(contentToWrite)
+
+
+def getCourseListRange():
+    f = open('promptsPS18.txt', "r")
+    while f.readable():
+        cont = f.readline()
+        if cont == '':
+            break
+        if 'courseOffer' in cont:
+            contlst = cont.split(':')
+            f.close()
+            return float(contlst[1]), float(contlst[2].rstrip('\n'))
 
 
 class HashTable:
@@ -57,24 +88,24 @@ class HashTable:
         hash_key = self.getHash(studentId)
         if len(self.hashTable) < hash_key:
             self.hashTable.append([[] for k in range(hash_key - len(self.hashTable))])
-        self.hashTable.append(CGPA)
+        self.hashTable.append([studentId, CGPA])
+
+    def searchStudentwithStudentId(self, studentId):
+        hash_key = self.getHash(studentId)
+        return self.hashTable[hash_key]
+
+    def searchStudentwithCgpa(self, CGPAFrom, CPGATo):
+        studentColl = []
+        for item in self.hashTable:
+            if (item[1] is not None) and (CGPAFrom <= item[1] <= CPGATo):
+                studentColl.append(item)
+        return studentColl
 
     def destroyHash(self):
         self.hashTable = []
 
 
 # Extra methods to generate data
-def inputRead(filename):
-    hashtbl = HashTable()
-    f = open(filename, "r")
-    f.readline()
-    while f.readable():
-        rec = f.readline().split(',')
-        hashtbl.insertStudentRec(rec[0], rec[1])
-    print('CGPA for student id 2010MSE15: ' + str(hashtbl.searchStudent('2010MSE15')))
-    f.close()
-
-
 def generateinputPS18():
     f = open('inputPS18.txt', "w+")
     y = 2010
@@ -91,19 +122,7 @@ def generateinputPS18():
     f.close()
 
 
-def generateoutputPS18(eligiblestudents):
-    f = open('outputPS18.txt', "w+")
-    f.write('---------- hall of fame ----------\n')
-    f.write('Total eligible students:' + len(eligiblestudents) + '\n')
-    f.write('Qualified students:\n')
-    for s in eligiblestudents:
-        f.write(eligiblestudents[0] + '/' + eligiblestudents[1])
-    f.write('-------------------------------------\n---------- new course candidates ----------\n')
-    f.close()
-
-
-def generatepromptsPS18():
-    f = open('promptsPS18.txt', "w+")
-    f.write('hallOfFame:\n')
-    f.write('courseOffer:\n')
+def generateoutputPS18(content):
+    f = open('outputPS18.txt', "a")
+    f.write(content + '\n')
     f.close()
