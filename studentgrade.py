@@ -23,7 +23,7 @@ def newCourseList(StudentHashRecords, CGPAFrom, CPGATo):
     # implement year restriction
     stdswithgrade = StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
     for item in stdswithgrade:
-        if not (2010 <= int(item[0][0:4]) <= 2015):
+        if not (2015 <= int(item[0][0:4]) <= 2019):
             stdswithgrade.remove(item)
     return stdswithgrade
 
@@ -38,26 +38,15 @@ def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
 
 # 5
 def depAvg(StudentHashRecords):
-    studentColl = StudentHashRecords.getAll()
-    # depts CSE, MEC, ECE, ARC
-    maxcgpa = [0.0, 0.0, 0.0, 0.0]
-    avgCgpa = [0.0, 0.0, 0.0, 0.0]
-    for item in studentColl:
-        dept = item[0][5:8]
-        cgpa = item[1]
-        if dept == 'CSE':
-            maxcgpa[0] = cgpa if cgpa > maxcgpa[0] else maxcgpa[0]
-            avgCgpa[0] += cgpa
-        elif dept == 'MEC':
-            maxcgpa[1] = cgpa if cgpa > maxcgpa[1] else maxcgpa[1]
-            avgCgpa[1] += cgpa
-        elif dept == 'ECE':
-            maxcgpa[2] = cgpa if cgpa > maxcgpa[2] else maxcgpa[2]
-            avgCgpa[2] += cgpa
-        elif dept == 'ARC':
-            maxcgpa[3] = cgpa if cgpa > maxcgpa[3] else maxcgpa[3]
-            avgCgpa[4] += cgpa
-        avgCgpa[:] = [x / len(studentColl) for x in studentColl]
+    maxCgpa, avgCgpa = StudentHashRecords.depAvg()
+    contentToWrite = '---------- department CGPA ----------\nCSE: max: ' + maxcgpa[0] + ', avg: ' + avgCgpa[0] + '\n' \
+                                                                                                                 'ECE: max: ' + \
+                     maxcgpa[1] + ', avg: ' + avgCgpa[1] + '\n' \
+                                                           'ECE: max: ' + maxcgpa[2] + ', avg: ' + avgCgpa[2] + '\n' \
+                                                                                                                'ARC: max: ' + \
+                     maxcgpa[3] + ', avg: ' + avgCgpa[3] + '\n' \
+                                                           '\n-------------------------------------\n'
+    generateoutputPS18(contentToWrite)
 
 
 def getnewCourseList(StudentHashRecords):
@@ -66,7 +55,8 @@ def getnewCourseList(StudentHashRecords):
     contentToWrite = f'---------- new course candidates ----------\nInput: {cgpafrom}:{cgpato}\nTotal eligible students: {len(eligibleStudents)}' \
                      f'\nQualified students:\n'
     for item in eligibleStudents:
-        contentToWrite += item[0] + '/' + str(item[1]) + '\n'
+        contentToWrite += item[0] + '/' + str(item[1]) +
+    contentToWrite += '\n-------------------------------------\n'
     generateoutputPS18(contentToWrite)
 
 
@@ -124,6 +114,35 @@ class HashTable:
     def destroyHash(self):
         self.hashTable = []
 
+    def depAvg(self):
+        studentColl = self.hashTable()
+        # depts CSE, MEC, ECE, ARC
+        maxcgpa = [0.0, 0.0, 0.0, 0.0]
+        avgCgpa = [0.0, 0.0, 0.0, 0.0]
+        for item in studentColl:
+            if item is None:
+                continue
+            dept = item[0][5:8]
+            cgpa = item[1]
+            if dept == 'CSE':
+                if cgpa > maxcgpa[0]:
+                    maxcgpa[0] = cgpa
+                avgCgpa[0] += cgpa
+            elif dept == 'MEC':
+                if cgpa > maxcgpa[1]:
+                    maxcgpa[1] = cgpa
+                avgCgpa[1] += cgpa
+            elif dept == 'ECE':
+                if cgpa > maxcgpa[2]:
+                    maxcgpa[2] = cgpa
+                avgCgpa[2] += cgpa
+            elif dept == 'ARC':
+                if cgpa > maxcgpa[3]:
+                    maxcgpa[3] = cgpa
+                avgCgpa[4] += cgpa
+            avgCgpa[:] = [x / len(studentColl) for x in avgCgpa]
+            return maxcgpa, avgCgpa
+
     def getAll(self):
         studentColl = []
         for item in self.hashTable:
@@ -137,7 +156,7 @@ def generateinputPS18():
     f = open('inputPS18.txt', "w+")
     y = 2010
     dept = ['CSE', 'MEC', 'ECE', 'ARC']
-    while y <= 2014:
+    while y <= 2020:
         for d in dept:
             k = 0
             cgpa = 0.0
