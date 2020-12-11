@@ -13,20 +13,8 @@ def insertStudentRec(StudentHashRecords, studentId, CGPA):
     StudentHashRecords.insertStudentRec(studentId, CGPA)
 
 
-def searchStudentwithStudentId(StudentHashRecords, studentId):
-    return StudentHashRecords.searchStudentwithStudentId(studentId)
-
-
-def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
-    return StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
-
-
 # 3
 def hallOfFame(StudentHashRecords):
-    pass
-
-
-def depAvg(self):
     pass
 
 
@@ -35,9 +23,41 @@ def newCourseList(StudentHashRecords, CGPAFrom, CPGATo):
     # implement year restriction
     stdswithgrade = StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
     for item in stdswithgrade:
-        if not(2010 <= int(item[0][0:4]) <= 2015):
+        if not (2010 <= int(item[0][0:4]) <= 2015):
             stdswithgrade.remove(item)
     return stdswithgrade
+
+
+def searchStudentwithStudentId(StudentHashRecords, studentId):
+    return StudentHashRecords.searchStudentwithStudentId(studentId)
+
+
+def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
+    return StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
+
+
+# 5
+def depAvg(StudentHashRecords):
+    studentColl = StudentHashRecords.getAll()
+    # depts CSE, MEC, ECE, ARC
+    maxcgpa = [0.0, 0.0, 0.0, 0.0]
+    avgCgpa = [0.0, 0.0, 0.0, 0.0]
+    for item in studentColl:
+        dept = item[0][5:8]
+        cgpa = item[1]
+        if dept == 'CSE':
+            maxcgpa[0] = cgpa if cgpa > maxcgpa[0] else maxcgpa[0]
+            avgCgpa[0] += cgpa
+        elif dept == 'MEC':
+            maxcgpa[1] = cgpa if cgpa > maxcgpa[1] else maxcgpa[1]
+            avgCgpa[1] += cgpa
+        elif dept == 'ECE':
+            maxcgpa[2] = cgpa if cgpa > maxcgpa[2] else maxcgpa[2]
+            avgCgpa[2] += cgpa
+        elif dept == 'ARC':
+            maxcgpa[3] = cgpa if cgpa > maxcgpa[3] else maxcgpa[3]
+            avgCgpa[4] += cgpa
+        avgCgpa[:] = [x / len(studentColl) for x in studentColl]
 
 
 def getnewCourseList(StudentHashRecords):
@@ -103,6 +123,13 @@ class HashTable:
 
     def destroyHash(self):
         self.hashTable = []
+
+    def getAll(self):
+        studentColl = []
+        for item in self.hashTable:
+            if item[1] is not None:
+                studentColl.append(item)
+        return studentColl
 
 
 # Extra methods to generate data
