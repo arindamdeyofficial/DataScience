@@ -15,6 +15,8 @@ def insertStudentRec(StudentHashRecords, studentId, CGPA):
 
 # 3
 def hallOfFame(StudentHashRecords):
+    # Input file will be promptsPS18.txt and tag will be "hallOfFame:"
+    # return list of passout students who have topped their department in there grad year, append in outputPS18.txt file
     pass
 
 
@@ -38,7 +40,7 @@ def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
 
 # 5
 def depAvg(StudentHashRecords):
-    maxCgpa, avgCgpa = StudentHashRecords.depAvg()
+    maxcgpa, avgCgpa = StudentHashRecords.depAvg()
     contentToWrite = '---------- department CGPA ----------\nCSE: max: ' + maxcgpa[0] + ', avg: ' + avgCgpa[0] + '\n' \
                                                                                                                  'ECE: max: ' + \
                      maxcgpa[1] + ', avg: ' + avgCgpa[1] + '\n' \
@@ -55,8 +57,7 @@ def getnewCourseList(StudentHashRecords):
     contentToWrite = f'---------- new course candidates ----------\nInput: {cgpafrom}:{cgpato}\nTotal eligible students: {len(eligibleStudents)}' \
                      f'\nQualified students:\n'
     for item in eligibleStudents:
-        contentToWrite += item[0] + '/' + str(item[1]) +
-    contentToWrite += '\n-------------------------------------\n'
+        contentToWrite += item[0] + '/' + str(item[1]) + '\n-------------------------------------\n'
     generateoutputPS18(contentToWrite)
 
 
@@ -82,7 +83,7 @@ class HashTable:
     # This function creates an empty hash table and points to null.
     def initializeHash(self):
         # creating Hashtable - nested list.
-        self.hashTable = []
+        self.hashTable = [None]
 
     def getHash(self, studentId):
         # Calculate StudentHashRecords for each record of inputPS18 file
@@ -96,19 +97,28 @@ class HashTable:
     def insertStudentRec(self, studentId, CGPA):
         # This function inserts the student id
         hash_key = self.getHash(studentId)
-        if len(self.hashTable) < hash_key:
+        if (len(self.hashTable) - 1) < hash_key:
             self.hashTable.append([[] for k in range(hash_key - len(self.hashTable))])
-        self.hashTable.append([studentId, CGPA])
+        data = self.hashTable[hash_key]
+        if data is None:
+            self.hashTable[hash_key] = [[studentId, CGPA]]
+        else:
+            self.hashTable[hash_key].append([studentId, CGPA])
 
     def searchStudentwithStudentId(self, studentId):
         hash_key = self.getHash(studentId)
-        return self.hashTable[hash_key]
+        eleatIndex = self.hashTable[hash_key]
+        for item in eleatIndex:
+            if item[0] == studentId:
+                return item[1]
 
     def searchStudentwithCgpa(self, CGPAFrom, CPGATo):
         studentColl = []
         for item in self.hashTable:
-            if (item[1] is not None) and (CGPAFrom <= item[1] <= CPGATo):
-                studentColl.append(item)
+            if item is not None:
+                for student in item:
+                    if CGPAFrom <= student[1] <= CPGATo:
+                        studentColl.append(item)
         return studentColl
 
     def destroyHash(self):
@@ -172,3 +182,11 @@ def generateoutputPS18(content):
     f = open('outputPS18.txt', "a")
     f.write(content + '\n')
     f.close()
+
+
+if __name__ == "__main__":
+    # studentgrade.generateinputPS18()
+    StudentHashRecords = HashTable()
+    insertHashData(StudentHashRecords)
+    print('Grade for this student: ' + str(searchStudentwithStudentId(StudentHashRecords, '2011CSE5')))
+    getnewCourseList(StudentHashRecords)
