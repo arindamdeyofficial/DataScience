@@ -92,13 +92,17 @@ class HashTable:
         h = 0
         for char in studentId:
             h += ord(char)
-        return h % (len(self.hashTable) + 1)
+        return h % 9 + h % 10
 
     def insertStudentRec(self, studentId, CGPA):
         # This function inserts the student id
         hash_key = self.getHash(studentId)
         if (len(self.hashTable) - 1) < hash_key:
-            self.hashTable.append([[] for k in range(hash_key - len(self.hashTable))])
+            for k in range(hash_key - len(self.hashTable) + 2):
+                if k == 0:
+                    self.hashTable[k] = []
+                else:
+                    self.hashTable.append([])
         data = self.hashTable[hash_key]
         if data is None:
             self.hashTable[hash_key] = [[studentId, CGPA]]
@@ -108,9 +112,10 @@ class HashTable:
     def searchStudentwithStudentId(self, studentId):
         hash_key = self.getHash(studentId)
         eleatIndex = self.hashTable[hash_key]
-        for item in eleatIndex:
-            if item[0] == studentId:
-                return item[1]
+        if eleatIndex is not None:
+            for item in eleatIndex:
+                if item[0] == studentId:
+                    return item[1]
 
     def searchStudentwithCgpa(self, CGPAFrom, CPGATo):
         studentColl = []
@@ -118,7 +123,7 @@ class HashTable:
             if item is not None:
                 for student in item:
                     if CGPAFrom <= student[1] <= CPGATo:
-                        studentColl.append(item)
+                        studentColl.append(student)
         return studentColl
 
     def destroyHash(self):
@@ -156,9 +161,16 @@ class HashTable:
     def getAll(self):
         studentColl = []
         for item in self.hashTable:
-            if item[1] is not None:
-                studentColl.append(item)
+            if item is not None:
+                for student in item:
+                    studentColl.append(student)
         return studentColl
+
+    def display_all(self):
+        for item in self.hashTable:
+            if item is not None:
+                for student in item:
+                    print('Student Id: ' + student[0] + ' CGPA: ' + student[1])
 
 
 # Extra methods to generate data
@@ -188,5 +200,31 @@ if __name__ == "__main__":
     # studentgrade.generateinputPS18()
     StudentHashRecords = HashTable()
     insertHashData(StudentHashRecords)
-    print('Grade for this student: ' + str(searchStudentwithStudentId(StudentHashRecords, '2011CSE5')))
     getnewCourseList(StudentHashRecords)
+
+    # Unit tests
+    grade2019ECE3 = searchStudentwithStudentId(StudentHashRecords, '2019ECE3')
+    print('Grade for student Id 2019ECE3 is : ' + str(grade2019ECE3) + ' and it''s a ' + ('match' if grade2019ECE3 == 1.5 else 'not match'))
+
+    grade2010ECE0 = searchStudentwithStudentId(StudentHashRecords, '2010ECE0')
+    print('Grade for student Id 2010ECE0 is : ' + str(grade2010ECE0) + ' and it''s a ' + (
+        'match' if grade2010ECE0 == 0.0 else 'not match'))
+
+    grade2011ECE7 = searchStudentwithStudentId(StudentHashRecords, '2011ECE7')
+    print('Grade for student Id 2011ECE7 is : ' + str(grade2011ECE7) + ' and it''s a ' + (
+        'match' if grade2011ECE7 == 3.5 else 'not match'))
+
+    grade2011ARC10 = searchStudentwithStudentId(StudentHashRecords, '2011ARC10')
+    print('Grade for student Id 2011ARC10 is : ' + str(grade2011ARC10) + ' and it''s a ' + (
+        'match' if grade2011ARC10 == 5.0 else 'not match'))
+
+    grade2019MEC35 = searchStudentwithStudentId(StudentHashRecords, '2019MEC35')
+    print('Grade for student Id 2019MEC35 is : ' + str(grade2019MEC35) + ' and it''s a ' + (
+        'match' if grade2019MEC35 == 1.0 else 'not match'))
+
+    grade2020ARC55 = searchStudentwithStudentId(StudentHashRecords, '2020ARC55')
+    print('Grade for student Id 2020ARC55 is : ' + str(grade2020ARC55) + ' and it''s a ' + (
+        'match' if grade2020ARC55 == 0 else 'not match'))
+
+
+
