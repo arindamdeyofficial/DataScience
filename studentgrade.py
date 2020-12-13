@@ -29,8 +29,15 @@ def hallOfFame(StudentHashRecords):
                        if item is not None
                        for st in item
                        if 2010 <= int(st[0][0:4]) <= 2016]
-        depts = list(set(st[0] for st in allstudents))
-        yrs = list(set(st[1] for st in allstudents))
+        yrs = []
+        for st in allstudents:
+            if st[0] not in depts:
+                depts.append(st[0])
+        # depts = list(set(st[0] for st in allstudents))
+        for st in allstudents:
+            if st[1] not in yrs:
+                yrs.append(st[1])
+        # yrs = list(set(st[1] for st in allstudents))
         for dept in depts:
             for y in yrs:
                 for st in allstudents:
@@ -87,17 +94,21 @@ def depAvg(StudentHashRecords):
     # depts CSE, MEC, ECE, ARC
     # dept number can be dynamic
     contentToWrite = ''
+    depts = []
     # liner data form of students
     allstudents = [[st[0][4:7], st[1]]  # [dept, year, studentId, Cgpa]
                    for item in StudentHashRecords.hashTable
                    if item is not None
                    for st in item]
-    depts = list(set(st[0] for st in allstudents))
+    for st in allstudents:
+        if st[0] not in depts:
+            depts.append(st[0])
+    # depts = list(set(st[0] for st in allstudents))
     for dept in depts:
         stofdept = [st[1] for st in allstudents]
         contentToWrite += str(dept) + ': max: ' + \
                         str(max(stofdept)) + ', avg: ' + str(round(sum(stofdept) / len(stofdept), 1)) + '\n'
-    contentToWrite = '---------- department CGPA ----------\nCSE: max: ' \
+    contentToWrite = '---------- department CGPA ----------\n' \
                      + contentToWrite + '\n-------------------------------------\n'
     generateoutputPS18(contentToWrite)
 
