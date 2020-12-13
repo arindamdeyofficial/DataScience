@@ -17,48 +17,80 @@ def insertStudentRec(StudentHashRecords, studentId, CGPA):
 def hallOfFame(StudentHashRecords):
     # Input file will be promptsPS18.txt and tag will be "hallOfFame:"
     # return list of passout students who have topped their department in there grad year, append in outputPS18.txt file
-    pass
+    if gethalloffametrigger() == 1:
+        # dept number can be dynamic
+        # [
+        #   dept,
+        #       [
+        #           [y, stid, cgpa],
+        #           [y, stid, cgpa]
+        #        ]
+        #   dept,
+        #       [
+        #           [y, stid, cgpa],
+        #           [y, stid, cgpa]
+        #        ]
+        #  ]
+        maxcgpa = []
+        depts = []  # list of all dept
+        contentToWrite = ''
+        count = 0
+        for item in StudentHashRecords.hashTable:
+            if item is not None:
+                for st in item:
+                    y = int(st[0][0:4])
+                    if 2010 <= y <= 2016:
+                        dept = st[0][4:7]
+                        cgpa = st[1]
+                        if dept in depts:
+                            for m in maxcgpa:
+                                if m[0] == dept:
+                                    for rec in m[1:]:
+                                        if rec[0] == y:
+                                            if rec[2] < cgpa:
+                                                rec[1] = st[0]
+                                                rec[2] = cgpa  # studentId
+                                        else:
+                                            m.append([y, st[0], cgpa])
+                        else:
+                            depts.append(dept)
+                            maxcgpa.append([dept, [y, st[0], cgpa]])
+        for item in maxcgpa:
+            for rec in item:
+                contentToWrite += rec[0] + '/' + str(rec[1]) + '\n'
+                ++count
+        student = StudentHashRecords.searchStudentwithStudentId()
+        contentToWrite = '---------- hall of fame ----------\nTotal eligible students: ' + count +\
+                         '\nQualified students:\n' + contentToWrite + \
+                         '\n-------------------------------------\n'
+        generateoutputPS18(contentToWrite)
+
+
+def gethalloffametrigger():
+    f = open('promptsPS18.txt', "r")
+    while f.readable():
+        cont = f.readline()
+        if cont == '':
+            break
+        if 'hallOfFame' in cont:
+            return 1
 
 
 # 4
 def newCourseList(StudentHashRecords, CGPAFrom, CPGATo):
     # implement year restriction
-    stdswithgrade = StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
-    for item in stdswithgrade:
-        if not (2015 <= int(item[0][0:4]) <= 2019):
-            stdswithgrade.remove(item)
-    return stdswithgrade
-
-
-def searchStudentwithStudentId(StudentHashRecords, studentId):
-    return StudentHashRecords.searchStudentwithStudentId(studentId)
-
-
-def searchStudentwithCgpa(StudentHashRecords, CGPAFrom, CPGATo):
-    return StudentHashRecords.searchStudentwithCgpa(CGPAFrom, CPGATo)
-
-
-# 5
-def depAvg(StudentHashRecords):
-    maxcgpa, avgCgpa = StudentHashRecords.depAvg()
-    contentToWrite = '---------- department CGPA ----------\nCSE: max: ' + maxcgpa[0] + ', avg: ' + avgCgpa[0] + '\n' \
-                                                                                                                 'ECE: max: ' + \
-                     maxcgpa[1] + ', avg: ' + avgCgpa[1] + '\n' \
-                                                           'ECE: max: ' + maxcgpa[2] + ', avg: ' + avgCgpa[2] + '\n' \
-                                                                                                                'ARC: max: ' + \
-                     maxcgpa[3] + ', avg: ' + avgCgpa[3] + '\n' \
-                                                           '\n-------------------------------------\n'
-    generateoutputPS18(contentToWrite)
-
-
-def getnewCourseList(StudentHashRecords):
-    cgpafrom, cgpato = getCourseListRange()
-    eligibleStudents = newCourseList(StudentHashRecords, cgpafrom, cgpato)
-    contentToWrite = f'---------- new course candidates ----------\nInput: {cgpafrom}:{cgpato}\nTotal eligible students: {len(eligibleStudents)}' \
-                     f'\nQualified students:\n'
-    for item in eligibleStudents:
-        contentToWrite += item[0] + '/' + str(item[1]) + '\n-------------------------------------\n'
-    generateoutputPS18(contentToWrite)
+    contenttowrite = ''
+    counter = 0
+    for item in StudentHashRecords.hashTable:
+        if item is not None:
+            for student in item:
+                if (CGPAFrom <= student[1] <= CPGATo) and (2015 <= int(student[0][0:4]) <= 2019):
+                    contenttowrite += student[0] + '/' + str(student[1]) + '\n'
+                    ++counter
+    contenttowrite = f'---------- new course candidates ----------\nInput: {cgpafrom}:{cgpato}\nTotal eligible students: {counter}' \
+                     f'\nQualified students:\n' + contenttowrite
+    contenttowrite += '\n-------------------------------------\n'
+    generateoutputPS18(contenttowrite)
 
 
 def getCourseListRange():
@@ -71,6 +103,21 @@ def getCourseListRange():
             contlst = cont.split(':')
             f.close()
             return float(contlst[1]), float(contlst[2].rstrip('\n'))
+
+
+# 5
+def depAvg(StudentHashRecords):
+    maxcgpa, avgCgpa = StudentHashRecords.depAvg()
+    contentToWrite = '---------- department CGPA ----------\nCSE: max: ' + str(maxcgpa[0]) + ', avg: ' + str(
+        avgCgpa[0]) + '\n' \
+                      'ECE: max: ' + \
+                     str(maxcgpa[1]) + ', avg: ' + str(avgCgpa[1]) + '\n' \
+                                                                     'ECE: max: ' + str(maxcgpa[2]) + ', avg: ' + str(
+        avgCgpa[2]) + '\n' \
+                      'ARC: max: ' + \
+                     str(maxcgpa[3]) + ', avg: ' + str(avgCgpa[3]) + '\n' \
+                                                                     '\n-------------------------------------\n'
+    generateoutputPS18(contentToWrite)
 
 
 class HashTable:
@@ -130,32 +177,29 @@ class HashTable:
         self.hashTable = []
 
     def depAvg(self):
-        studentColl = self.hashTable()
         # depts CSE, MEC, ECE, ARC
-        maxcgpa = [0.0, 0.0, 0.0, 0.0]
-        avgCgpa = [0.0, 0.0, 0.0, 0.0]
-        for item in studentColl:
+        # dept number can be dynamic
+        maxcgpa = []
+        avgCgpa = []
+        depts = []
+        for item in self.hashTable:
             if item is None:
                 continue
-            dept = item[0][5:8]
-            cgpa = item[1]
-            if dept == 'CSE':
-                if cgpa > maxcgpa[0]:
-                    maxcgpa[0] = cgpa
-                avgCgpa[0] += cgpa
-            elif dept == 'MEC':
-                if cgpa > maxcgpa[1]:
-                    maxcgpa[1] = cgpa
-                avgCgpa[1] += cgpa
-            elif dept == 'ECE':
-                if cgpa > maxcgpa[2]:
-                    maxcgpa[2] = cgpa
-                avgCgpa[2] += cgpa
-            elif dept == 'ARC':
-                if cgpa > maxcgpa[3]:
-                    maxcgpa[3] = cgpa
-                avgCgpa[4] += cgpa
-            avgCgpa[:] = [x / len(studentColl) for x in avgCgpa]
+            for st in item:
+                dept = st[0][5:8]
+                cgpa = st[1]
+                if dept in depts:
+                    for m in maxcgpa:
+                        if (m[0] == dept) and (m[1] < cgpa):
+                            m[1] = cgpa
+                    for a in avgCgpa:
+                        if m[0] == dept:
+                            m[1] += cgpa
+                    avgCgpa[:] = [x / len(self.hashTable) for x in avgCgpa]
+                else:
+                    depts.append(dept)
+                    maxcgpa.append([dept, cgpa])
+                    avgCgpa.append([dept, cgpa])
             return maxcgpa, avgCgpa
 
     def getAll(self):
@@ -197,34 +241,48 @@ def generateoutputPS18(content):
 
 
 if __name__ == "__main__":
+    # data generation
     # studentgrade.generateinputPS18()
+
+    # object creation
     StudentHashRecords = HashTable()
+
+    # 2
+    # reads from file inputPS18.txt and insert into the Hash table in a loop inside this function
+    # insertStudentRec(StudentHashRecords, rec[0], float(rec[1].rstrip("\n")))
     insertHashData(StudentHashRecords)
-    getnewCourseList(StudentHashRecords)
+
+    # 3
+    hallOfFame(StudentHashRecords)
+
+    # 4
+    cgpafrom, cgpato = getCourseListRange()
+    newCourseList(StudentHashRecords, cgpafrom, cgpato)
+
+    # 5
+    depAvg(StudentHashRecords)
 
     # Unit tests
-    grade2019ECE3 = searchStudentwithStudentId(StudentHashRecords, '2019ECE3')
-    print('Grade for student Id 2019ECE3 is : ' + str(grade2019ECE3) + ' and it''s a ' + ('match' if grade2019ECE3 == 1.5 else 'not match'))
+    grade2019ECE3 = StudentHashRecords.searchStudentwithStudentId('2019ECE3')
+    print('Grade for student Id 2019ECE3 is : ' + str(grade2019ECE3) + ' and it''s a ' + (
+        'match' if grade2019ECE3 == 1.5 else 'not match'))
 
-    grade2010ECE0 = searchStudentwithStudentId(StudentHashRecords, '2010ECE0')
+    grade2010ECE0 = StudentHashRecords.searchStudentwithStudentId('2010ECE0')
     print('Grade for student Id 2010ECE0 is : ' + str(grade2010ECE0) + ' and it''s a ' + (
         'match' if grade2010ECE0 == 0.0 else 'not match'))
 
-    grade2011ECE7 = searchStudentwithStudentId(StudentHashRecords, '2011ECE7')
+    grade2011ECE7 = StudentHashRecords.searchStudentwithStudentId('2011ECE7')
     print('Grade for student Id 2011ECE7 is : ' + str(grade2011ECE7) + ' and it''s a ' + (
         'match' if grade2011ECE7 == 3.5 else 'not match'))
 
-    grade2011ARC10 = searchStudentwithStudentId(StudentHashRecords, '2011ARC10')
+    grade2011ARC10 = StudentHashRecords.searchStudentwithStudentId('2011ARC10')
     print('Grade for student Id 2011ARC10 is : ' + str(grade2011ARC10) + ' and it''s a ' + (
         'match' if grade2011ARC10 == 5.0 else 'not match'))
 
-    grade2019MEC35 = searchStudentwithStudentId(StudentHashRecords, '2019MEC35')
+    grade2019MEC35 = StudentHashRecords.searchStudentwithStudentId('2019MEC35')
     print('Grade for student Id 2019MEC35 is : ' + str(grade2019MEC35) + ' and it''s a ' + (
         'match' if grade2019MEC35 == 1.0 else 'not match'))
 
-    grade2020ARC55 = searchStudentwithStudentId(StudentHashRecords, '2020ARC55')
+    grade2020ARC55 = StudentHashRecords.searchStudentwithStudentId('2020ARC55')
     print('Grade for student Id 2020ARC55 is : ' + str(grade2020ARC55) + ' and it''s a ' + (
         'match' if grade2020ARC55 == 0 else 'not match'))
-
-
-
