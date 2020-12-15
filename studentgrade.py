@@ -1,22 +1,18 @@
+# 2
 def insertHashData(StudentHashRecords):
     f = open('inputPS18.txt', "r")
     while f.readable():
         rec = f.readline().split('/')
         if rec == ['']:
             break
-        insertStudentRec(StudentHashRecords, rec[0], float(rec[1].rstrip("\n")))
+        StudentHashRecords.insertStudentRec(rec[0], float(rec[1].rstrip("\n")))
     f.close()
-
-
-# 2
-def insertStudentRec(StudentHashRecords, studentId, CGPA):
-    StudentHashRecords.insertStudentRec(studentId, CGPA)
-
 
 # 3
 def hallOfFame(StudentHashRecords):
     # Input file will be promptsPS18.txt and tag will be "hallOfFame:"
-    # return list of passout students who have topped their department in there grad year, append in outputPS18.txt file
+    # return list of passout students who have topped their department
+    # in there grad year, append in outputPS18.txt file
     if gethalloffametrigger() == 1:
         # dept number can be dynamic
         maxcgpa = []
@@ -24,7 +20,8 @@ def hallOfFame(StudentHashRecords):
         contentToWrite = ''
         count = 0
         # liner data form of students
-        allstudents = [[st[0][4:7], int(st[0][0:4]), st[0], st[1]]  # [dept, year, studentId, Cgpa]
+        allstudents = \
+            [[st[0][4:7], int(st[0][0:4]), st[0], st[1]] # [dept, year, studentId, Cgpa]
                        for item in StudentHashRecords.hashTable
                        if item is not None
                        for st in item
@@ -209,6 +206,9 @@ if __name__ == "__main__":
 
     # 5
     depAvg(StudentHashRecords)
+
+    # 6
+    StudentHashRecords.destroyHash()
 
     # Unit tests
     # grade2019ECE3 = StudentHashRecords.searchStudentwithStudentId('2019ECE3')
